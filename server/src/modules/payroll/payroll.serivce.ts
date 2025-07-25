@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Payroll } from '@prisma/client';
 import { CreatePayrollDto, UpdatePayrollDto } from 'src/dtos/payroll.dto';
@@ -22,6 +26,14 @@ export class PayrollService {
   }
 
   async create(createPayrollDto: CreatePayrollDto): Promise<Payroll> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: createPayrollDto.employeeId },
+    });
+    if (!employee || employee.isArchived) {
+      throw new BadRequestException(
+        `Invalid or archived employeeId: ${createPayrollDto.employeeId}`,
+      );
+    }
     return this.prisma.payroll.create({
       data: {
         ...createPayrollDto,
@@ -34,6 +46,14 @@ export class PayrollService {
     id: number,
     updatePayrollDto: UpdatePayrollDto,
   ): Promise<Payroll> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: updatePayrollDto.employeeId },
+    });
+    if (!employee || employee.isArchived) {
+      throw new BadRequestException(
+        `Invalid or archived employeeId: ${updatePayrollDto.employeeId}`,
+      );
+    }
     await this.findOne(id);
     return this.prisma.payroll.update({
       where: { id },

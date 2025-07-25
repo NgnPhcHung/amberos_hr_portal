@@ -46,12 +46,12 @@ export class EmployeeController {
   }
 
   @Delete(':id')
-  archive(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.employeeService.archive(id);
+  archive(@Param('id', ParseIntPipe) id: number): Promise<Employee> {
+    return this.employeeService.remove(id);
   }
 
   @Post(':id/restore')
-  restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  restore(@Param('id', ParseIntPipe) id: number): Promise<Employee> {
     return this.employeeService.restore(id);
   }
 }

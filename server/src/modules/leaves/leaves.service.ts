@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { LeaveRequest } from '@prisma/client';
 import {
@@ -27,6 +31,14 @@ export class LeaveService {
   async create(
     createLeaveRequestDto: CreateLeaveRequestDto,
   ): Promise<LeaveRequest> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: createLeaveRequestDto.employeeId },
+    });
+    if (!employee || employee.isArchived) {
+      throw new BadRequestException(
+        `Invalid or archived employeeId: ${createLeaveRequestDto.employeeId}`,
+      );
+    }
     return this.prisma.leaveRequest.create({
       data: {
         ...createLeaveRequestDto,

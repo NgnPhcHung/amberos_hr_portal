@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Attendance } from '@prisma/client';
 import {
@@ -27,6 +31,14 @@ export class AttendanceService {
   }
 
   async create(createAttendanceDto: CreateAttendanceDto): Promise<Attendance> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: createAttendanceDto.employeeId },
+    });
+    if (!employee || employee.isArchived) {
+      throw new BadRequestException(
+        `Invalid or archived employeeId: ${createAttendanceDto.employeeId}`,
+      );
+    }
     return this.prisma.attendance.create({
       data: {
         ...createAttendanceDto,
@@ -45,6 +57,14 @@ export class AttendanceService {
     id: number,
     updateAttendanceDto: UpdateAttendanceDto,
   ): Promise<Attendance> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: updateAttendanceDto.employeeId },
+    });
+    if (!employee || employee.isArchived) {
+      throw new BadRequestException(
+        `Invalid or archived employeeId: ${updateAttendanceDto.employeeId}`,
+      );
+    }
     await this.findOne(id);
     return this.prisma.attendance.update({
       where: { id },

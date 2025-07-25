@@ -1,4 +1,10 @@
-import { IsString, IsEmail, IsDateString, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsBoolean,
+  IsDateString,
+} from 'class-validator';
 
 export class CreateEmployeeDto {
   @IsString()
@@ -18,6 +24,10 @@ export class CreateEmployeeDto {
 
   @IsDateString()
   hireDate: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isArchived?: boolean;
 }
 
 export class UpdateEmployeeDto {
@@ -44,4 +54,8 @@ export class UpdateEmployeeDto {
   @IsOptional()
   @IsDateString()
   hireDate?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isArchived?: boolean;
 }

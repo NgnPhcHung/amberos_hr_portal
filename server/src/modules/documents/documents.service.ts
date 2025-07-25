@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Document } from '@prisma/client';
 import { CreateDocumentDto, UpdateDocumentDto } from 'src/dtos/documents.dto';
@@ -22,6 +26,14 @@ export class DocumentService {
   }
 
   async create(createDocumentDto: CreateDocumentDto): Promise<Document> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: createDocumentDto.employeeId },
+    });
+    if (!employee || employee.isArchived) {
+      throw new BadRequestException(
+        `Invalid or archived employeeId: ${createDocumentDto.employeeId}`,
+      );
+    }
     return this.prisma.document.create({
       data: {
         ...createDocumentDto,
@@ -34,6 +46,15 @@ export class DocumentService {
     id: number,
     updateDocumentDto: UpdateDocumentDto,
   ): Promise<Document> {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: updateDocumentDto.employeeId },
+    });
+    if (!employee || employee.isArchived) {
+      throw new BadRequestException(
+        `Invalid or archived employeeId: ${updateDocumentDto.employeeId}`,
+      );
+    }
+
     await this.findOne(id);
     return this.prisma.document.update({
       where: { id },
@@ -53,7 +74,6 @@ export class DocumentService {
 
   async upload(id: number, filePath: string): Promise<Document> {
     await this.findOne(id);
-    // Logic to handle actual file upload (e.g., to S3 or local storage) can be added here
     return this.prisma.document.update({
       where: { id },
       data: { filePath },
